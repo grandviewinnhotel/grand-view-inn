@@ -1,93 +1,65 @@
-import React from "react";
-import Slider from "react-slick";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
-const heroImages = [
-  "/images/hero-deluxe.jpg",
-  "/images/hero-executive.jpg",
-  "/images/hero-suite.jpg",
-];
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:1337";
 
-const sliderSettings = {
-  dots: true,
-  infinite: true,
-  speed: 800,
-  slidesToShow: 1,
-  slidesToScroll: 1,
-  autoplay: true,
-  autoplaySpeed: 3500,
-  arrows: false,
-};
+export default function Rooms() {
+  const [rooms, setRooms] = useState([]);
 
-export default function Home() {
+  useEffect(() => {
+    fetch(`${API_URL}/api/rooms?populate=*`)
+      .then((res) => res.json())
+      .then((data) => setRooms(data.data))
+      .catch((err) => console.error("Error fetching rooms:", err));
+  }, []);
+
   return (
-    <main className="text-white">
-      {/* Hero Slider Section */}
-      <section className="relative h-[82vh] overflow-hidden">
-        <Slider {...sliderSettings}>
-          {heroImages.map((src, i) => (
-            <div key={i} className="w-full h-[82vh] relative">
+    <div className="bg-[#0b1033] min-h-screen text-white px-6 py-12">
+      <h1 className="text-4xl font-bold text-center mb-12">Our Rooms</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {rooms.map((room) => {
+          const attrs = room.attributes;
+          const imgUrl =
+            attrs.room_images && attrs.room_images.length > 0
+              ? `${API_URL}${attrs.room_images[0].url}`
+              : "https://via.placeholder.com/400x300?text=No+Image";
+
+          return (
+            <div
+              key={room.id}
+              className="bg-[#1a1f4c] rounded-2xl shadow-lg overflow-hidden flex flex-col"
+            >
+              {/* Room Image */}
               <img
-                src={src}
-                alt={"Hero " + i}
-                className="w-full h-full object-cover"
+                src={imgUrl}
+                alt={attrs.room_name}
+                className="h-56 w-full object-cover"
               />
-              <div className="absolute inset-0 bg-black/50" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <motion.h1
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8 }}
-                  className="text-4xl md:text-6xl font-extrabold text-gold text-center px-4"
-                >
-                  Your Stay, Our Care
-                </motion.h1>
+
+              {/* Room Info */}
+              <div className="p-6 flex flex-col flex-grow">
+                <h2 className="text-2xl font-semibold mb-3">
+                  {attrs.room_name}
+                </h2>
+                <p className="text-gray-300 mb-4">{attrs.room_description}</p>
+
+                <div className="mt-auto">
+                  <p className="text-yellow-400 font-bold">
+                    Price: ₹{attrs.room_price}+tax
+                  </p>
+                  <p>Capacity: {attrs.room_capacity} guests</p>
+                  <p className="text-sm text-gray-400">
+                    Amenities: {attrs.room_amenities}
+                  </p>
+                  <button className="mt-4 w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-2 px-4 rounded-xl transition">
+                    Book Now
+                  </button>
+                </div>
               </div>
             </div>
-          ))}
-        </Slider>
-        <a
-          href="/booking"
-          className="absolute bottom-8 right-8 bg-gold text-black font-bold px-6 py-3 rounded-lg shadow-lg hover:bg-yellow-400 transition"
-        >
-          Book Now
-        </a>
-      </section>
-
-      {/* About Section */}
-      <section className="py-14 text-center">
-        <h2 className="text-3xl md:text-4xl font-bold text-gold mb-4">
-          Experience Comfort & Elegance
-        </h2>
-        <p className="text-gray-300 max-w-3xl mx-auto">
-          In the heart of Kalyan Nagar, Bangalore — Deluxe, Executive & Suite
-          rooms with warm hospitality, seamless check-in and curated amenities.
-        </p>
-      </section>
-
-      {/* Hotel Photo + Contact Info Section */}
-      <section className="py-14 text-center bg-[#0a0f2c]">
-        <h2 className="text-3xl md:text-4xl font-bold text-gold mb-6">
-          Get in Touch
-        </h2>
-
-        {/* Hotel Image */}
-        <div className="max-w-4xl mx-auto mb-6">
-          <img
-            src="/images/hotel-front.jpg" // 👉 replace with your actual hotel image
-            alt="Grand View Inn Hotel"
-            className="w-full rounded-2xl shadow-lg object-cover"
-          />
-        </div>
-
-        {/* Contact Details */}
-        <p className="text-lg text-gray-300">
-          📞 +91 7348802777
-        </p>
-        <p className="text-lg text-gray-300">
-          📧 grandviewinnhotel.com@gmail.com
-        </p>
-      </section>
-    </main>
+          );
+        })}
+      </div>
+    </div>
   );
 }
